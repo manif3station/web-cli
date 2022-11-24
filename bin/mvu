@@ -1,0 +1,16 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use FindBin '$Bin';
+
+my ($cmd, @args) = @ARGV or exit;
+
+my $script = "bin/_$cmd";
+
+die "Command is not found\n" if !-f $script;
+
+die "Command is not executable\n" if !-x $script;
+
+exec $script, @args;
