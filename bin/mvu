@@ -9,8 +9,8 @@ my ($cmd, @args) = @ARGV or exit;
 
 my $script = "bin/_$cmd";
 
-die "Command is not found\n" if !-f $script;
+die "Command '$cmd' is not found\n" if !-f $script;
 
-die "Command is not executable\n" if !-x $script;
+die "Command '$cmd' is not executable\n" if !-x $script;
 
 exec $script, @args;
