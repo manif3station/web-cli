@@ -1,0 +1,66 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+my ($start_dir) = @ARGV;
+
+if ($start_dir) {
+    mkdir $start_dir;
+    chdir $start_dir;
+}
+
+mkdir 'docker-compose';
+mkdir 'bin';
+mkdir 'src';
+mkdir 'src/plugins';
+mkdir 'src/bin';
+mkdir 'src/lib';
+mkdir 'src/views';
+mkdir 'src/views/layouts';
+mkdir 'src/public';
+mkdir 'src/public/js';
+mkdir 'src/public/css';
+mkdir 'src/public/images';
+mkdir 'src/public/fonts';
+mkdir 'src/public/files';
+
+my $dir = 'src/plugins/web-plugins';
+
+system qw(git init);
+
+{
+    open my $fh, '>', '.gitignore';
+    print $fh <<'HEREDOC';
+.DS_Store
+.enabled
+*.swp
+*.log
+HEREDOC
+}
+
+system
+  qw(git submodule add --force --name web-plugins -b master https://github.com/manif3station/web-plugins.git),
+  $dir;
+
+my $plugin = "bin/_plugin";
+
+symlink "../$dir/$plugin", $plugin;
+
+system $plugin => 'update';
+system $plugin => qw(install web-cli);
+
+map { system qw(mvu plugin install) => $_ } qw(
+  web-env
+  web-docker
+  web-arm-chip
+  perl-base
+  web-dancer2
+  web-debug
+  web-template-layouts
+);
+
+system qw(mvu docker --enable perl-base);
+system qw(mvu plugin update);
+system qw(git add .);
+system qw(git commit -am init);
