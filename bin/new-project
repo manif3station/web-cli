@@ -1,0 +1,49 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+sub main {
+    my ($git_link) = @_ or die "Missing project name";
+
+    my $name = $git_link;
+
+    if ($git_link =~ m/([^\/]+)\.git$/) {
+        $name = $1;
+        $git_link =~ s/github\.com/github.mf/;
+    }
+
+    my $pwd = $ENV{PWD};
+
+    if ( $pwd =~ m/\/$name$/ ) {
+        system "mvu docker down";
+        chdir "..";
+    }
+    elsif ( $pwd =~ m/$name/ ) {
+        $pwd =~ m{^(.+)/\Q$name\E/};
+        chdir $1;
+        system "cd $name; mvu docker down";
+    }
+
+    mkdir $name;
+
+    chomp($pwd = `pwd`);
+
+    print "Is the right directory to start with? ($pwd/$name) [y/n] ";
+
+    chomp( my $answer = <STDIN> );
+
+    if   ( $answer =~ /y/i ) { }
+    else                     { exit }
+
+    system rm => -fr => $name;
+
+    mkdir $name;
+
+    chdir $name;
+
+    system "curl -L https://tiny.one/new-web | perl";
+    system qw(mvu plugin install) => $git_link;
+}
+
+main @ARGV
